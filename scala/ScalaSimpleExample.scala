@@ -16,7 +16,9 @@
 package tour
 
 import scala.collection.immutable.IndexedSeq
+import scala.collection.JavaConverters._
 
+import com.mongodb.MongoCredential._
 import org.mongodb.scala._
 import org.mongodb.scala.model.Aggregates._
 import org.mongodb.scala.model.Filters._
@@ -24,6 +26,8 @@ import org.mongodb.scala.model.Projections._
 import org.mongodb.scala.model.Sorts._
 import org.mongodb.scala.model.Updates._
 import org.mongodb.scala.model._
+import org.mongodb.scala.connection.{NettyStreamFactoryFactory,SslSettings}
+import org.mongodb.scala.connection.ClusterSettings
 
 import tour.Helpers._
 
@@ -40,7 +44,24 @@ object QuickTour {
    */
   def main(args: Array[String]): Unit = {
 
-    val mongoClient: MongoClient = if (args.isEmpty) MongoClient() else MongoClient(args.head)
+    // configure SSL settings for the client
+    val user: String = "username"
+    val databasename: String = "test"
+    val password: Array[Char] = "password".toCharArray
+    val hostname: String = "hostname"
+    
+    val credential: MongoCredential = createMongoCRCredential(user, databasename, password)
+    val settings: MongoClientSettings = 
+         MongoClientSettings
+             .builder()
+             .clusterSettings(ClusterSettings.builder().hosts(List(new ServerAddress(hostname)).asJava).build())
+             .credentialList(List(credential,credential).asJava)
+             //.sslSettings(SslSettings.builder().enabled(true).invalidHostNameAllowed(true).build())
+             .sslSettings(SslSettings.builder().enabled(true).build())
+             .streamFactoryFactory(NettyStreamFactoryFactory())
+             .build()
+
+    val mongoClient: MongoClient = MongoClient(settings)
 
     // get handle to "mydb" database
     val database: MongoDatabase = mongoClient.getDatabase("mydb")
@@ -89,10 +110,10 @@ object QuickTour {
     collection.find().projection(excludeId()).first().printHeadResult()
 
     //Aggregation
-    collection.aggregate(Seq(
-      filter(gt("i", 0)),
-      project(Document("""{ITimes10: {$multiply: ["$i", 10]}}"""))
-    )).printResults()
+    //collection.aggregate(Seq(
+    //  filter(gt("i", 0)),
+    //  project(Document("""{ITimes10: {$multiply: ["$i", 10]}}"""))
+    //)).printResults()
 
     // Update One
     collection.updateOne(equal("i", 10), set("i", 110)).printHeadResult("Update Result: ")
