@@ -9,74 +9,56 @@
  * A PHP script connecting to a MongoDB database given a MongoDB Connection URI.
  */
 
-// Create seed data
-$seedData = array(
-    array(
-        'decade' => '1970s', 
-        'artist' => 'Debby Boone',
-        'song' => 'You Light Up My Life', 
-        'weeksAtOne' => 10
-    ),
-    array(
-        'decade' => '1980s', 
-        'artist' => 'Olivia Newton-John',
-        'song' => 'Physical', 
-        'weeksAtOne' => 10
-    ),
-    array(
-        'decade' => '1990s', 
-        'artist' => 'Mariah Carey',
-        'song' => 'One Sweet Day', 
-        'weeksAtOne' => 16
-    ),
-);
-
 /*
  * Standard single-node URI format: 
  * mongodb://[username:password@]host:port/[database]
  */
-$uri = "mongodb://user:pass@host:port/db";
+$uri = getenv('MONGODB_URI');
+if ($uri == null) {
+   $uri = "mongodb://user:pass@host:port/db";
+}
 
-$client = new MongoClient($uri);
-$db = $client->selectDB("db");
+echo "Connecting to $uri\n";
+
+$client = new MongoDB\Driver\Manager($uri);
 
 /*
  * First we'll add a few songs. Nothing is required to create the songs
  * collection; it is created automatically when we insert.
  */
-$songs = $db->songs;
-
-// To insert a dict, use the insert method.
-$songs->batchInsert($seedData);
+echo "Executing bulk write\n";
+$bulk = new MongoDB\Driver\BulkWrite;
+$bulk->insert(['decade' => '1970s', 'artist' => 'Debby Boone', 'song' => 'You Light Up My Life',  'weeksAtOne' => 10]);
+$bulk->insert(['decade' => '1980s', 'artist' => 'Olivia Newton-John', 'song' => 'Physical',  'weeksAtOne' => 10]);
+$bulk->insert(['decade' => '1990s', 'artist' => 'Mariah Carey', 'song' => 'One Sweet Day',  'weeksAtOne' => 16]);
+$client->executeBulkWrite("db.songs", $bulk);
 
 /*
  * Then we need to give Boyz II Men credit for their contribution to
  * the hit "One Sweet Day".
 */
-$songs->update(
+
+echo "Executing update\n";
+$bulk = new MongoDB\Driver\BulkWrite;
+$bulk->update(
     array('artist' => 'Mariah Carey'), 
     array('$set' => array('artist' => 'Mariah Carey ft. Boyz II Men'))
 );
+$client->executeBulkWrite("db.songs", $bulk);
     
 /*
  * Finally we run a query which returns all the hits that spent 10 
  * or more weeks at number 1. 
 */
-$query = array('weeksAtOne' => array('$gte' => 10));
-$cursor = $songs->find($query)->sort(array('decade' => 1));
-
-foreach($cursor as $doc) {
-    echo 'In the ' .$doc['decade'];
-    echo ', ' .$doc['song']; 
-    echo ' by ' .$doc['artist'];
-    echo ' topped the charts for ' .$doc['weeksAtOne']; 
-    echo ' straight weeks.', "\n";
-}
+echo "Executing query\n";
+$query = new MongoDB\Driver\Query(['weeksAtOne' => ['$gte' => 10]]);
+$cursor = $client->executeQuery("db.songs", $query);
+$queryResults = $cursor->toArray();
+var_dump($queryResults);
 
 // Since this is an example, we'll clean up after ourselves.
-$songs->drop();
-
-// Only close the connection when your app is terminating
-$client->close();
+echo "Executing dropCollection\n";
+$dropCollection = new MongoDB\Driver\Command(["drop" => "songs"]);
+$client->executeCommand("db", $dropCollection);
 
 ?>

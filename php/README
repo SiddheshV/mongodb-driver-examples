@@ -1,0 +1,27 @@
+Install PEAR via apt-get to get the necessary package and distribution system that both PEAR and PECL use.
+	sudo apt-get install php-pear
+
+Install PHP-dev package for your version of php
+	apt-get install php7.0-dev
+
+Install mongodb extension using
+	sudo pecl install mongodb
+
+Find your configuration file (php.ini) using the below command
+	php --ini
+
+Find the priority of the json.so module (dependency required by php)
+	vim /etc/php/7.0/mods-available/json.ini
+
+Create a new mongodb.ini with the below content  (change the priority value to be greater than json )
+	; configuration for php mongo module
+	; priority=30
+	extension=mongodb.so
+
+Create a softlink of the ini-file to /etc/php/7.0/fpm/conf.d to make it available to cli
+	sudo ln -s /etc/php/7.0/mods-available/mongodb.ini /etc/php/7.0/cli/conf.d/30-mongodb.ini
+
+Create a new environment variable to hold the connection string
+	export MONGODB_URI="your connection string"
+
+Run the sample code
