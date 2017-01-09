@@ -13,7 +13,7 @@ for the following:
     -Node.js
      http://docs.mongodb.org/ecosystem/drivers/node-js/
 
-    -PHP
+    -PHP (using MongoDB\Driver\Manager syntax)
      http://docs.mongodb.org/ecosystem/drivers/php/
 
     -Python (using pymongo)
@@ -25,6 +25,11 @@ for the following:
     -Ruby (Mongoid)
      https://docs.mongodb.org/ecosystem/tutorial/ruby-mongoid-tutorial/
 
+    -Scala
+     https://mongodb.github.io/mongo-scala-driver/
+
+    -GoLang
+     http://labix.org/mgo
 
 These examples should run outright after you install the appropriate
 drivers and insert your MongoDB URI. See
