@@ -1,0 +1,17 @@
+Install golang
+sudo apt-get install golang-go
+
+Set GOPATH to your target directory (e.g.)
+	sivethe@sivethe-ubuntu:~/git/mongodb-driver-examples/mgo$ export GOPATH=/home/sivethe/git/mongodb-driver-examples/mgo/
+
+Install mgo
+	sivethe@sivethe-ubuntu:~/git/mongodb-driver-examples/mgo$ go get gopkg.in/mgo.v2
+
+Build and Install sample (from the mgo directory)
+	sivethe@sivethe-ubuntu:~/git/mongodb-driver-examples/mgo$ go install mgo_simple_example
+
+Create a new environment variable to hold the connection string (remove the /ssl=true as mgo does not support it)
+	sivethe@sivethe-ubuntu:~/git/mongodb-driver-examples/mgo$ export MONGODB_URI="your connection string"
+	
+Execute the sample
+	sivethe@sivethe-ubuntu:~/git/mongodb-driver-examples/mgo$ bin/mgo_simple_example
