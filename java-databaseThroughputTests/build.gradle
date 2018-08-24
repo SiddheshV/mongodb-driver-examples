@@ -1,0 +1,10 @@
+apply plugin: 'application'
+mainClassName = "DatabaseThroughputTest.CollectionThroughputTests"
+
+dependencies {
+    compile 'org.mongodb:mongodb-driver:3.3.0'
+}
+
+repositories {
+    mavenCentral()
+}
